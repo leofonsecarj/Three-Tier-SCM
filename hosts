@@ -1,20 +1,20 @@
 [jumpbox]
 bastion # ansible_host=bastion."{{ GUID }}".example.opentlc.com
 
-[frontends]
+[load_balancers]
 frontend1 ansible_host=frontend1."{{ GUID }}".internal
 
-[apps]
+[app_servers]
 app1 ansible_host=app1."{{ GUID }}".internal
 app2 ansible_host=app2."{{ GUID }}".internal
 
-[appdbs]
+[database_servers]
 appdb1 ansible_host=appdb1."{{ GUID }}".internal
 
 [internal:children]
-frontends
-apps
-appdbs
+load_balancers
+app_servers
+database_servers
 
 [all:vars]
 GUID="{{ lookup('env', 'GUID') }}"
