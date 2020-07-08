@@ -1,0 +1,58 @@
+--- 
+- name: Deploy Application Tier
+  hosts: app_servers
+  gather_facts: false
+  become: true
+  vars:
+    postgres_rhel7_repo: "https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+    app_server_packages:
+      - httpd
+      - python-psycopg2
+    app_server_port: 8080    
+    app_server_service: httpd
+
+  tags:
+    - app_servers
+
+  tasks:
+
+    - name: Install Apache package(s)
+      package:
+        name: "{{ app_server_packages }}"
+        state: present
+
+    - name: Enable Apache at boot
+      service:
+        name: httpd
+        enabled: yes
+
+    - name: Copy static index.html to apache var/www/html/index.html
+      template:
+        src: index.html.j2
+        dest: /var/www/html/index.html
+        mode: 0644
+
+    - name: Start Apache
+      service:
+        name: "{{ app_server_service }}"
+        state: started
+
+- name: End to end smoke tests
+  hosts: app_servers
+  become: false
+  gather_facts: false
+  tags:
+    - smoketest  
+  tasks:
+ 
+    - name: Check webserver for correct response
+      uri:
+        url: "http://frontend1.{{ GUID }}.example.opentlc.com"
+        return_content: yes
+      until: '"Welcome to Tomcat" in result.content'
+      retries: 10
+      delay: 1
+      register: result
+      delegate_to: localhost
+
+

@@ -1,0 +1,4 @@
+- import_playbook: config_postgree.yml
+- import_playbook: deploy_tier.yml
+- import_playbook: deploy_haproxy.yml
+
